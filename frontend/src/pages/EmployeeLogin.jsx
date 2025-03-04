@@ -1,6 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { 
+  Button, 
+  TextField, 
+  Typography, 
+  Container, 
+  Box, 
+  Link, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogContentText 
+} from '@mui/material';
 import './Login.css'; 
 
 const EmployeeLogin = () => {
@@ -10,6 +22,7 @@ const EmployeeLogin = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const { email, password } = formData;
@@ -22,7 +35,22 @@ const EmployeeLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Enhanced client-side validation
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setLoading(true);
+    setError('');
     
     try {
       const res = await axios.post('/api/employees/login', {
@@ -30,8 +58,8 @@ const EmployeeLogin = () => {
         password
       });
       
-      // Store the token in localStorage
-      localStorage.setItem('token', res.data.token);
+      // More secure token storage (consider using httpOnly cookies in production)
+      sessionStorage.setItem('token', res.data.token);
       
       // Set auth header for future requests
       axios.defaults.headers.common['x-auth-token'] = res.data.token;
@@ -39,57 +67,132 @@ const EmployeeLogin = () => {
       // Redirect to dashboard or employee home page
       navigate('/employee/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      // More generic error message for security
+      setError('Login failed. Please check your credentials.');
       console.error('Login error:', err.response?.data);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleForgotPassword = () => {
+    // Implement password reset logic or navigation
+    navigate('/forgot-password');
+  };
+
+  const handleContactAdmin = () => {
+    setContactDialogOpen(true);
+  };
+
+  const handleCloseContactDialog = () => {
+    setContactDialogOpen(false);
+  };
+
   return (
-    <div className="login-container">
-      <div className="login-form-container">
-        <h1>Employee Login</h1>
-        <form onSubmit={handleSubmit}>
-          {error && <div className="error-message">{error}</div>}
+    <Container maxWidth="xs">
+      <Box 
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Employee Login
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          {error && (
+            <Typography 
+              color="error" 
+              variant="body2" 
+              sx={{ 
+                mb: 2, 
+                p: 1, 
+                bgcolor: 'error.light', 
+                color: 'error.contrastText',
+                borderRadius: 1 
+              }}
+            >
+              {error}
+            </Typography>
+          )}
           
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              required
-            />
-          </div>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={handleChange}
+          />
           
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              required
-            />
-          </div>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={handleChange}
+          />
           
-          <button type="submit" className="login-button" disabled={loading}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+            disabled={loading}
+          >
             {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-        
-        <div className="login-links">
-          <a href="/forgot-password">Forgot Password?</a>
-          <p>Don't have an account? Contact your administrator.</p>
-        </div>
-      </div>
-    </div>
+          </Button>
+          
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+            <Link 
+              component="button" 
+              variant="body2" 
+              onClick={handleForgotPassword}
+            >
+              Forgot Password?
+            </Link>
+            <Link 
+              component="button" 
+              variant="body2" 
+              onClick={handleContactAdmin}
+            >
+              Need an Account?
+            </Link>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Contact Admin Dialog */}
+      <Dialog
+        open={contactDialogOpen}
+        onClose={handleCloseContactDialog}
+        aria-labelledby="contact-admin-dialog-title"
+      >
+        <DialogTitle id="contact-admin-dialog-title">
+          Need an Account?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            To get an account or resolve login issues, please contact your IT administrator:
+            <br />
+            Email: admin@company.com
+            <br />
+            Phone: (555) 123-4567
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
+    </Container>
   );
 };
 

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { Navigate } from "react-router-dom";
 import CssBaseline from '@mui/material/CssBaseline';
-import Dashboard from './pages/Dashboard';
 import InventoryList from './pages/InventoryList';
 import AddItem from './pages/AddItem';
 import EditItem from './pages/EditItem';
@@ -10,6 +10,7 @@ import LowStock from './pages/LowStock';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import EmployeeLogin from './pages/EmployeeLogin';
+import EmployeeDashboard from './pages/EmployeeDashboard';
 import { Box } from '@mui/material';
 
 // Create a premium dark theme
@@ -76,14 +77,14 @@ function App() {
             }}
           >
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<Navigate to="/employee/login" replace />} />
+              <Route path="/employee/login" element={<EmployeeLogin />} />
+              <Route path="/employee/dashboard" element={<EmployeeDashboard/>} />
               <Route path="/inventory" element={<InventoryList />} />
               <Route path="/inventory/add" element={<AddItem />} />
               <Route path="/inventory/edit/:id" element={<EditItem />} />
               <Route path="/inventory/:id" element={<ItemDetails />} />
               <Route path="/low-stock" element={<LowStock />} />
-              <Route path="/employee/dashboard" element={<Dashboard/>} />
-              <Route path="/employee/login" element={<EmployeeLogin />} />
             </Routes>
           </Box>
         </Box>

@@ -1,4 +1,4 @@
 {
-    "mongoURI": "your-mongodb-connection-string",
-    "jwtSecret": "your-secret-jwt-key"
+    "mongoURI": "mongodb+srv://karneesh:sampleserver123@cluster0.oz10m.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+    "jwtSecret": "06a60621450cdcb81a619f0d55b9f799f632c99a3843dd24d883ae5126f8477c8c904d021f7b73620fd82d71b2c4cd9b301da720cbb4545602afee340327d21e"
   }

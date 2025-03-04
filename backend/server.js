@@ -19,7 +19,6 @@ mongoose.connect(process.env.MONGO_URI)
 const inventoryRoutes = require('./routes/inventory');
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/employees', require('./routes/api/employees'));
-app.use('/api/employees', require('./routes/api/employees'));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
