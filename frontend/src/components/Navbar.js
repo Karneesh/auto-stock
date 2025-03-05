@@ -53,7 +53,7 @@ const Navbar = () => {
           component="div"
           sx={{ display: { xs: 'none', sm: 'block' } }}
         >
-          AutoStock Premium
+          AutoStock
         </Typography>
         <Search>
           <SearchIconWrapper>

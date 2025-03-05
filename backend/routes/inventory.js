@@ -1,74 +1,90 @@
 const express = require('express');
 const router = express.Router();
-const Item = require('../models/Item');
+const Inventory = require('../models/Inventory');
+const multer = require('multer');
+const csv = require('csvtojson');
+const path = require('path');
+const fs = require('fs').promises;
 
-// Get all inventory items
+// Multer configuration for file upload (for admin backend use only)
+const upload = multer({ 
+  dest: 'uploads/temp/',
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext !== '.csv') {
+      return cb(new Error('Only CSV files are allowed'), false);
+    }
+    cb(null, true);
+  }
+});
+
+// Backend-only route for importing inventory
+router.post('/import', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    // Convert CSV to JSON
+    const inventoryItems = await csv().fromFile(req.file.path);
+
+    // Validate and convert Stock Qty to number
+    const processedItems = inventoryItems.map(item => ({
+      ...item,
+      'Stock Qty': parseFloat(item['Stock Qty']) || 0
+    }));
+
+    // Clear existing data and insert new
+    await Inventory.deleteMany({});
+    const result = await Inventory.insertMany(processedItems);
+
+    // Remove temporary file
+    await fs.unlink(req.file.path);
+
+    res.status(201).json({ 
+      message: 'Inventory imported successfully', 
+      count: result.length 
+    });
+  } catch (error) {
+    // Ensure temporary file is removed even if there's an error
+    if (req.file) {
+      await fs.unlink(req.file.path).catch(() => {});
+    }
+    
+    res.status(500).json({ 
+      message: 'Error importing inventory', 
+      error: error.message 
+    });
+  }
+});
+
+// Read-only route for getting inventory
 router.get('/', async (req, res) => {
   try {
-    const items = await Item.find();
-    res.json(items);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+    const { location, bin, material } = req.query;
+    
+    let searchConditions = {};
+    
+    if (location) {
+      searchConditions['Storage Location'] = location;
+    }
+    
+    if (bin) {
+      searchConditions['Storage Bin'] = bin;
+    }
+    
+    if (material) {
+      searchConditions['Material'] = { $regex: material, $options: 'i' };
+    }
 
-// Get single inventory item
-router.get('/:id', async (req, res) => {
-  try {
-    const item = await Item.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-    res.json(item);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Create inventory item
-router.post('/', async (req, res) => {
-  const item = new Item(req.body);
-  try {
-    const newItem = await item.save();
-    res.status(201).json(newItem);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Update inventory item
-router.put('/:id', async (req, res) => {
-  try {
-    const updatedItem = await Item.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
-    res.json(updatedItem);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-});
-
-// Delete inventory item
-router.delete('/:id', async (req, res) => {
-  try {
-    const item = await Item.findByIdAndDelete(req.params.id);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-    res.json({ message: 'Item deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Get low stock items
-router.get('/status/low-stock', async (req, res) => {
-  try {
-    const lowStockItems = await Item.find({
-      $expr: { $lte: ["$quantity", "$reorderLevel"] }
+    const inventory = await Inventory.find(searchConditions);
+    
+    res.json(inventory);
+  } catch (error) {
+    res.status(500).json({ 
+      message: 'Error retrieving inventory', 
+      error: error.message 
     });
-    res.json(lowStockItems);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
 });
 

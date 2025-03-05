@@ -1,27 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { Navigate } from "react-router-dom";
 import CssBaseline from '@mui/material/CssBaseline';
 import InventoryList from './pages/InventoryList';
-import AddItem from './pages/AddItem';
-import EditItem from './pages/EditItem';
-import ItemDetails from './pages/ItemDetails';
-import LowStock from './pages/LowStock';
+import { Box } from '@mui/material';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import EmployeeLogin from './pages/EmployeeLogin';
-import EmployeeDashboard from './pages/EmployeeDashboard';
-import { Box } from '@mui/material';
 
 // Create a premium dark theme
 const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#3f51b5',
+      main: '#0080c0', // Hyundai blue
     },
     secondary: {
-      main: '#f50057',
+      main: '#ff6b00', // Hyundai orange
     },
     background: {
       default: '#121212',
@@ -29,7 +22,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Hyundai Sans", "Roboto", "Helvetica", "Arial", sans-serif',
     h4: {
       fontWeight: 600,
     },
@@ -77,14 +70,8 @@ function App() {
             }}
           >
             <Routes>
-              <Route path="/" element={<Navigate to="/employee/login" replace />} />
-              <Route path="/employee/login" element={<EmployeeLogin />} />
-              <Route path="/employee/dashboard" element={<EmployeeDashboard/>} />
+              <Route path="/" element={<InventoryList />} />
               <Route path="/inventory" element={<InventoryList />} />
-              <Route path="/inventory/add" element={<AddItem />} />
-              <Route path="/inventory/edit/:id" element={<EditItem />} />
-              <Route path="/inventory/:id" element={<ItemDetails />} />
-              <Route path="/low-stock" element={<LowStock />} />
             </Routes>
           </Box>
         </Box>

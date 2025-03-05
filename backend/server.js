@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -18,7 +19,6 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes
 const inventoryRoutes = require('./routes/inventory');
 app.use('/api/inventory', inventoryRoutes);
-app.use('/api/employees', require('./routes/api/employees'));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

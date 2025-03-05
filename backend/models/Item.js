@@ -1,49 +1,53 @@
 const mongoose = require('mongoose');
 
-const itemSchema = new mongoose.Schema({
-  name: {
+// Define the Inventory Schema using exact column names from the CSV
+const inventorySchema = new mongoose.Schema({
+  'Storage Location': {
+    type: String,
+    required: true,
+    trim: true,
+    index: true
+  },
+  'Storage Bin': {
+    type: String,
+    required: true,
+    trim: true,
+    index: true
+  },
+  'Material': {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  'Material Description': {
     type: String,
     required: true,
     trim: true
   },
-  category: {
+  'Basic material': {
     type: String,
     required: true,
-    enum: ['Engine Parts', 'Body Parts', 'Electronics', 'Interior', 'Accessories']
+    trim: true
   },
-  model: {
-    type: String,
-    required: true
-  },
-  partNumber: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  price: {
-    type: Number,
-    required: true
-  },
-  quantity: {
+  'Stock Qty': {
     type: Number,
     required: true,
-    min: 0
-  },
-  reorderLevel: {
-    type: Number,
-    required: true,
-    default: 10
-  },
-  description: String,
-  location: String,
-  supplier: String,
-  imageUrl: String,
-  lastUpdated: {
-    type: Date,
-    default: Date.now
+    min: 0,
+    default: 0
   }
 }, {
-  timestamps: true
+  // Adds createdAt and updatedAt timestamps
+  timestamps: true,
+  
+  // Customize the collection name
+  collection: 'inventory'
 });
 
-module.exports = mongoose.model('Item', itemSchema);
+// Create composite index for faster querying
+inventorySchema.index({ 'Storage Location': 1, 'Storage Bin': 1 });
+
+// Create and export the model
+const Inventory = mongoose.model('Inventory', inventorySchema);
+
+module.exports = Inventory;

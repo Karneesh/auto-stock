@@ -1,38 +1,38 @@
+/* Hyundai Sans Font Import (Placeholder - see instructions below) */
+@font-face {
+  font-family: 'Hyundai Sans';
+  src: url('/path/to/HyundaiSans-Regular.woff2') format('woff2'),
+       url('/path/to/HyundaiSans-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .App {
   text-align: center;
+  font-family: 'Hyundai Sans', Arial, sans-serif;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Remove unnecessary styles */
+body {
+  font-family: 'Hyundai Sans', Arial, sans-serif;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.logo-text-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  font-family: 'Hyundai Sans', Arial, sans-serif;
 }
 
-.App-link {
-  color: #61dafb;
+.hyundai-logo {
+  width: 50px; /* Adjust size as needed */
+  height: auto;
+  margin-right: 10px; /* Space between logo and text */
+}
+.add-item {
+  display: none; /* Completely hides the element */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Alternative if you want to keep space but make invisible */
+.add-item {
+  visibility: hidden;
+  opacity: 0;
 }
