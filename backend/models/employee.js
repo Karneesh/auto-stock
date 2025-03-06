@@ -1,53 +1,35 @@
 const mongoose = require('mongoose');
 
-// Define the Inventory Schema using exact column names from the CSV
-const inventorySchema = new mongoose.Schema({
-  'Storage Location': {
+const employeeSchema = new mongoose.Schema({
+  name: {
     type: String,
     required: true,
-    trim: true,
-    index: true
+    trim: true
   },
-  'Storage Bin': {
-    type: String,
-    required: true,
-    trim: true,
-    index: true
-  },
-  'Material': {
+  email: {
     type: String,
     required: true,
     unique: true,
-    trim: true
+    trim: true,
+    lowercase: true
   },
-  'Material Description': {
+  password: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
-  'Basic material': {
+  role: {
     type: String,
-    required: true,
-    trim: true
+    enum: ['admin', 'employee'],
+    default: 'employee'
   },
-  'Stock Qty': {
-    type: Number,
-    required: true,
-    min: 0,
-    default: 0
+  isActive: {
+    type: Boolean,
+    default: true
   }
 }, {
-  // Adds createdAt and updatedAt timestamps
-  timestamps: true,
-  
-  // Customize the collection name
-  collection: 'inventory'
+  timestamps: true
 });
 
-// Create composite index for faster querying
-inventorySchema.index({ 'Storage Location': 1, 'Storage Bin': 1 });
+const Employee = mongoose.model('Employee', employeeSchema);
 
-// Create and export the model
-const Inventory = mongoose.model('Inventory', inventorySchema);
-
-module.exports = Inventory;
+module.exports = Employee;

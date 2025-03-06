@@ -10,10 +10,24 @@ const api = axios.create({
   }
 });
 
+// Use localStorage consistently for token storage
+const getToken = () => localStorage.getItem('token');
+const setToken = (token) => localStorage.setItem('token', token);
+const removeToken = () => localStorage.removeItem('token');
+
+// Set user info
+const setUserInfo = (user) => {
+  if (user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  } else {
+    localStorage.removeItem('user');
+  }
+};
+
 // Request interceptor for adding authentication token
 api.interceptors.request.use(
   (config) => {
-    const token = sessionStorage.getItem('token');
+    const token = getToken();
     if (token) {
       config.headers['x-auth-token'] = token;
     }
@@ -34,8 +48,9 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           // Unauthorized - clear token and redirect to login
-          sessionStorage.removeItem('token');
-          window.location.href = '/employee/login';
+          removeToken();
+          setUserInfo(null);
+          window.location.href = '/login';
           break;
         case 403:
           console.error('Forbidden: You do not have permission');
@@ -68,8 +83,8 @@ export const authService = {
       const response = await api.post('/employees/login', { email, password });
       
       // Store token and user info
-      sessionStorage.setItem('token', response.data.token);
-      sessionStorage.setItem('user', JSON.stringify(response.data.employee));
+      setToken(response.data.token);
+      setUserInfo(response.data.employee);
       
       return response.data;
     } catch (error) {
@@ -79,24 +94,24 @@ export const authService = {
   },
 
   logout: () => {
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    window.location.href = '/employee/login';
+    removeToken();
+    setUserInfo(null);
+    window.location.href = '/login';
   },
 
   getCurrentUser: () => {
-    const user = sessionStorage.getItem('user');
+    const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
 
   isAuthenticated: () => {
-    return !!sessionStorage.getItem('token');
+    return !!getToken();
   }
 };
 
 // Inventory-related services
 export const inventoryService = {
-  getAllItems: () => api.get('/inventory'),
+  getAllItems: (config) => api.get('/inventory', config),
   getItemById: (id) => api.get(`/inventory/${id}`),
   createItem: (itemData) => api.post('/inventory', itemData),
   updateItem: (id, itemData) => api.put(`/inventory/${id}`, itemData),

@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { 
+  Box, 
+  Paper, 
+  Typography, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  TextField,
+  Button,
+  Grid,
+  CircularProgress,
+  Alert
+} from '@mui/material';
+import { inventoryService } from '../utils/api';
 
-function InventoryView() {
+function InventoryList() {
   const [inventory, setInventory] = useState([]);
   const [filters, setFilters] = useState({
     location: '',
@@ -10,28 +26,27 @@ function InventoryView() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchInventory();
-  }, []);
-
   const fetchInventory = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await axios.get('/api/inventory', { 
+      const response = await inventoryService.getAllItems({ 
         params: filters 
       });
       
       setInventory(response.data);
     } catch (err) {
-      setError('Failed to fetch inventory');
       console.error('Inventory fetch error:', err);
+      setError('Failed to fetch inventory. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
+
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -42,63 +57,98 @@ function InventoryView() {
   };
 
   return (
-    <div className="inventory-view">
-      <h1>Inventory</h1>
+    <Box>
+      <Typography variant="h4" gutterBottom>Inventory</Typography>
       
-      <div className="filters">
-        <input
-          type="text"
-          name="location"
-          placeholder="Filter by Location"
-          value={filters.location}
-          onChange={handleFilterChange}
-        />
-        <input
-          type="text"
-          name="bin"
-          placeholder="Filter by Bin"
-          value={filters.bin}
-          onChange={handleFilterChange}
-        />
-        <input
-          type="text"
-          name="material"
-          placeholder="Search Material"
-          value={filters.material}
-          onChange={handleFilterChange}
-        />
-        <button onClick={fetchInventory}>Apply Filters</button>
-      </div>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Filter by Location"
+              name="location"
+              value={filters.location}
+              onChange={handleFilterChange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Filter by Bin"
+              name="bin"
+              value={filters.bin}
+              onChange={handleFilterChange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Search Material"
+              name="material"
+              value={filters.material}
+              onChange={handleFilterChange}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={fetchInventory}
+              fullWidth
+            >
+              Apply Filters
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
 
-      {isLoading && <p>Loading inventory...</p>}
-      {error && <p className="error">{error}</p>}
-
-      <table>
-        <thead>
-          <tr>
-            <th>Storage Location</th>
-            <th>Storage Bin</th>
-            <th>Material</th>
-            <th>Material Description</th>
-            <th>Basic Material</th>
-            <th>Stock Qty</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inventory.map((item, index) => (
-            <tr key={index}>
-              <td>{item['Storage Location']}</td>
-              <td>{item['Storage Bin']}</td>
-              <td>{item['Material']}</td>
-              <td>{item['Material Description']}</td>
-              <td>{item['Basic material']}</td>
-              <td>{item['Stock Qty']}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {isLoading ? (
+        <Box display="flex" justifyContent="center" my={4}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Storage Location</TableCell>
+                <TableCell>Storage Bin</TableCell>
+                <TableCell>Material</TableCell>
+                <TableCell>Material Description</TableCell>
+                <TableCell>Basic Material</TableCell>
+                <TableCell>Stock Qty</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {inventory.length > 0 ? (
+                inventory.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item['Storage Location']}</TableCell>
+                    <TableCell>{item['Storage Bin']}</TableCell>
+                    <TableCell>{item['Material']}</TableCell>
+                    <TableCell>{item['Material Description']}</TableCell>
+                    <TableCell>{item['Basic material']}</TableCell>
+                    <TableCell>{item['Stock Qty']}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    No inventory items found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Box>
   );
 }
 
-export default InventoryView;
+export default InventoryList;
